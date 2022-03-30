@@ -1,0 +1,291 @@
+_schema-version: "3.1"
+ID: capcapex
+description: A simple CAP project.
+version: 1.0.1
+parameters:
+  ###deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm install --production
+    - npx -p @sap/cds-dk cds build --production
+
+
+# ----------------------------------------------------------------
+# ----------------------------------------------------------------
+# ----------------------------MODULES-----------------------------
+# ----------------------------------------------------------------
+# ----------------------------------------------------------------
+modules:
+
+# --------------------- CAP SERVER MODULE ------------------------
+- name: capcapex-srv
+# ----------------------------------------------------------------
+  type: nodejs
+  path: gen/srv
+  properties:
+    SAP_JWT_TRUST_ACL: '[{"clientid":"*","identityzone":"*"}]'
+  requires:
+  # Resources extracted from CAP configuration
+  - name: capcapex-db
+  - name: capcapex-xsuaa-service
+  - name: capcapex-destination-service
+    parameters:
+      content-target: true
+  provides:
+  - name: srv-api # required by consumers of CAP services (e.g. approuter)
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+    disk-quota: 1024M
+    memory: 512M
+
+# -------------- SIDECAR MODULE - DB DEPLOYER----------------- 
+- name: capcapex-db-deployer
+# ------------------------------------------------------------
+  type: hdb
+  path: gen/db
+  requires:
+  - name: capcapex-db
+  parameters:
+    buildpack: nodejs_buildpack
+
+# -------------------- HTML5 Content ----------------------
+- name: capcapex-destination-content
+# ---------------------------------------------------------
+  type: com.sap.application.content
+  requires:
+  - name: capcapex-xsuaa-service
+    parameters:
+      service-key:
+        name: capcapex_xsuaa-key
+  - name: capcapex-html5-host
+    parameters:
+      service-key:
+        name: capcapex_html5_host-key
+  - name: capcapex-destination-service
+    parameters:
+      content-target: true        
+  parameters:
+    content:
+      subaccount:
+        destinations:
+        - Name: capcapex_html5_host
+          ServiceInstanceName: capcapex-html5-host-service
+          ServiceKeyName: capcapex_html5_host-key
+          sap.cloud.service: capcapex
+        - Authentication: OAuth2UserTokenExchange
+          Name: capcapex_xsuaa
+          ServiceInstanceName: capcapex-xsuaa-service
+          ServiceKeyName: capcapex_xsuaa-key
+          sap.cloud.service: capcapex
+        existing_destinations_policy: update    
+  build-parameters:
+    no-source: true
+
+# -------------- UI DEPLOYER MODULE - APP CONTENT ------------
+- name: capcapex-ui-deployer
+# ------------------------------------------------------------
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: capcapex-html5-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - capcapexappairport.zip
+      name: capcapexappairport
+      target-path: resources/
+    - artifacts:
+      - capcapexapppartnertype.zip
+      name: capcapexapppartnertype
+      target-path: resources/
+    - artifacts:
+      - capcapexappdeclaracao.zip
+      name: capcapexappdeclaracao
+      target-path: resources/
+    - artifacts:
+      - capcapexapppackage.zip
+      name: capcapexapppackage
+      target-path: resources/
+    - artifacts:
+      - capcapexappairline.zip
+      name: capcapexappairline
+      target-path: resources/
+    - artifacts:
+      - capcapexapppartner.zip
+      name: capcapexapppartner
+      target-path: resources/
+    - artifacts:
+      - capcapexappparcel.zip
+      name: capcapexappparcel
+      target-path: resources/
+    - artifacts:
+      - capcapexappcargoreceipt.zip
+      name: capcapexappcargoreceipt
+      target-path: resources/
+
+# --------------------- HTML5 MODULE -------------------------
+- name: capcapexappairport
+# ------------------------------------------------------------
+  type: html5
+  path: app/airport
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm run build:cf
+    supported-platforms: []
+# --------------------- HTML5 MODULE -------------------------
+- name: capcapexapppartnertype
+# ------------------------------------------------------------
+  type: html5
+  path: app/partnertype
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm run build:cf
+    supported-platforms: []
+
+# --------------------- HTML5 MODULE -------------------------    
+- name: capcapexappdeclaracao
+# ------------------------------------------------------------
+  type: html5
+  path: app/declaracao
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm run build:cf
+    supported-platforms: []
+
+# --------------------- HTML5 MODULE -------------------------    
+- name: capcapexapppackage
+# ------------------------------------------------------------
+  type: html5
+  path: app/package
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm run build:cf
+    supported-platforms: []
+
+# --------------------- HTML5 MODULE -------------------------    
+- name: capcapexappairline
+# ------------------------------------------------------------
+  type: html5
+  path: app/airline
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm run build:cf
+    supported-platforms: []
+
+# --------------------- HTML5 MODULE -------------------------    
+- name: capcapexapppartner
+# ------------------------------------------------------------
+  type: html5
+  path: app/partner
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm run build:cf
+    supported-platforms: []
+
+# --------------------- HTML5 MODULE -------------------------    
+- name: capcapexappparcel
+# ------------------------------------------------------------
+  type: html5
+  path: app/parcel
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm run build:cf
+    supported-platforms: []
+
+# --------------------- HTML5 MODULE -------------------------    
+- name: capcapexappcargoreceipt
+# ------------------------------------------------------------
+  type: html5
+  path: app/cargoreceipt
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm run build:cf
+    supported-platforms: []
+    
+# ----------------------------------------------------------------
+# ----------------------------------------------------------------
+# ---------------------------RESOURCES----------------------------
+# ----------------------------------------------------------------
+# ----------------------------------------------------------------
+resources:
+
+# --------------------- DB - HDI CONTAINER------------------------
+- name: capcapex-db
+# ----------------------------------------------------------------
+  type: com.sap.xs.hdi-container
+  parameters:
+    service: hana
+    service-plan: hdi-shared
+  properties:
+    hdi-service-name: ${service-name}
+
+# ------------------------ XSUAA Service -------------------------  
+- name: capcapex-xsuaa-service
+# ----------------------------------------------------------------
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: capcapex-xsuaa-service
+    service-plan: application
+
+# ----------------- Destination Service -------------------   
+- name: capcapex-destination-service
+# ---------------------------------------------------------
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      ##HTML5Runtime_enabled: true
+      init_data:
+        subaccount:
+          destinations:
+          - Authentication: NoAuthentication
+            Description: CAP Objectstore Destination Service
+            HTML5.DynamicDestination: true
+            HTML5.ForwardAuthToken: true
+            HTML5.Timeout: 300000
+            Name: capcapex
+            ProxyType: Internet
+            Type: HTTP
+            URL: ~{srv-api/srv-url}  
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: capcapex-destination-service
+    service-plan: lite
+  requires:
+  - name: srv-api
+
+# ---------------------- HTML5 Host -------------------------
+- name: capcapex-html5-host
+# -----------------------------------------------------------
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: capcapex-html5-host-service
+    service-plan: app-host
+

@@ -1,0 +1,15 @@
+@server = http://localhost:4004
+@me = Authorization: Basic {{$processEnv USER}}:
+@basic = Authorization: Basic admin:admin
+### ------------------------------------------------------------------------
+# Get AdditionalExpense
+GET  {{server}}/v2/catalog/AdditionalExpense 
+content-type: application/json
+{{me}}
+
+
+### ------------------------------------------------------------------------
+# Delete AdditionalExpense
+DELETE   {{server}}/v2/catalog/AdditionalExpense(5e3199a2-c3a5-434f-8848-6ab95ff761d8) 
+content-type: application/json
+{{me}} 
