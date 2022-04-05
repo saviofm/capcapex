@@ -12,3 +12,4 @@ class CatalogService extends cds.ApplicationService {
 }
 
 module.exports = { CatalogService };
+

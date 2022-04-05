@@ -1,0 +1,24 @@
+{
+  "welcomeFile": "/index.html",
+  "authenticationMethod": "route",
+  "routes": [
+    {
+      "csrfProtection": false,
+      "source": "^/v2/catalog/",
+      "destination": "capcapex",
+      "authenticationType": "xsuaa"
+  },
+  {
+      "csrfProtection": false,
+      "source": "^/catalog/",
+      "destination": "capcapex",
+      "authenticationType": "xsuaa"
+  },
+    {
+      "source": "^(.*)$",
+      "target": "$1",
+      "service": "html5-apps-repo-rt",
+      "authenticationType": "xsuaa"
+    }
+  ]
+}
